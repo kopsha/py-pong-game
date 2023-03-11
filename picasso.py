@@ -47,6 +47,8 @@ class PicassoEngine(metaclass=abc.ABCMeta):
                     self.on_mouse_motion(event)
                 elif event.type == pygame.KEYDOWN:
                     self.on_key(event)
+                elif event.type == pygame.KEYUP:
+                    self.on_key(event)
 
             cycle_end = time.perf_counter_ns()
             duration = (cycle_end - cycle_start) // 1_000_000
