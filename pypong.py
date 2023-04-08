@@ -44,7 +44,8 @@ class PyPongGame(PicassoEngine):
         # ball info
         self.ball = Point(MIDDLE, HEIGHT // 2)
         self.velocity = Point(
-            choice((-1, 1)) * randint(5, 15), choice((-1, 1)) * randint(5, 15)
+            choice((-1, 1)) * randint(5, 15),
+            choice((-1, 1)) * randint(5, 15),
         )
 
         self.left_up = False
@@ -108,24 +109,42 @@ class PyPongGame(PicassoEngine):
         )
 
         if new_pos.x > (WIDTH - BALL_THICKNESS):
+            # TODO: left player scores
             over_x = new_pos.x - (WIDTH - BALL_THICKNESS)
             new_pos.x -= over_x
             self.velocity.x = -self.velocity.x
 
         if new_pos.x < (0 + BALL_THICKNESS):
+            # TODO: right player scores
             over_x = new_pos.x - (0 + BALL_THICKNESS)
             new_pos.x -= over_x
             self.velocity.x = -self.velocity.x
 
+        # wall reflections
         if new_pos.y > (HEIGHT - BALL_THICKNESS):
             over_y = new_pos.y - (HEIGHT - BALL_THICKNESS)
             new_pos.y -= over_y
             self.velocity.y = -self.velocity.y
-
-        if new_pos.y < (0 + BALL_THICKNESS):
+        elif new_pos.y < (0 + BALL_THICKNESS):
             over_y = new_pos.y - (0 + BALL_THICKNESS)
             new_pos.y -= over_y
             self.velocity.y = -self.velocity.y
+        elif (
+            ((self.right_player.y - BALL_THICKNESS) <= new_pos.y <= (self.right_player.y + STICK_HEIGHT + BALL_THICKNESS))
+            and
+            ((self.right_player.x - BALL_THICKNESS) <= new_pos.x <= self.right_player.x)
+        ):  # right player reflections
+            over_x = new_pos.x - (self.right_player.x - BALL_THICKNESS)
+            new_pos.x -= over_x
+            self.velocity.x = -self.velocity.x
+        elif (
+            ((self.left_player.y - BALL_THICKNESS) <= new_pos.y <= (self.left_player.y + STICK_HEIGHT + BALL_THICKNESS))
+            and
+            ((self.left_player.x +  STICK_WIDTH) <= new_pos.x <= ((self.left_player.x +  STICK_WIDTH) + BALL_THICKNESS))
+        ):  # left player reflections
+            over_x = new_pos.x - ((self.left_player.x +  STICK_WIDTH) + BALL_THICKNESS)
+            new_pos.x -= over_x
+            self.velocity.x = -self.velocity.x
 
         self.ball = new_pos
 
