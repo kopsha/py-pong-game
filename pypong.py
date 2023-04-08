@@ -37,21 +37,23 @@ class PyPongGame(PicassoEngine):
         super().__init__(*args, **kwargs)
         self.frame_counter = 0
 
-        # players position
+        self.left_up = False
+        self.left_down = False
+        self.right_up = False
+        self.right_down = False
+
         self.left_player = Point(LEFT_LANE, 100)
         self.right_player = Point(RIGHT_LANE, 100)
 
-        # ball info
+        self.restart_game()
+
+    def restart_game(self):
+        # ball start from center in random direction
         self.ball = Point(MIDDLE, HEIGHT // 2)
         self.velocity = Point(
             choice((-1, 1)) * randint(5, 15),
             choice((-1, 1)) * randint(5, 15),
         )
-
-        self.left_up = False
-        self.left_down = False
-        self.right_up = False
-        self.right_down = False
 
     def post_init(self):
         pass
@@ -108,17 +110,9 @@ class PyPongGame(PicassoEngine):
             self.ball.y + self.velocity.y,
         )
 
-        if new_pos.x > (WIDTH - BALL_THICKNESS):
-            # TODO: left player scores
-            over_x = new_pos.x - (WIDTH - BALL_THICKNESS)
-            new_pos.x -= over_x
-            self.velocity.x = -self.velocity.x
-
-        if new_pos.x < (0 + BALL_THICKNESS):
-            # TODO: right player scores
-            over_x = new_pos.x - (0 + BALL_THICKNESS)
-            new_pos.x -= over_x
-            self.velocity.x = -self.velocity.x
+        if new_pos.x > (WIDTH - BALL_THICKNESS) or new_pos.x < (0 + BALL_THICKNESS):
+            self.restart_game()
+            return
 
         # wall reflections
         if new_pos.y > (HEIGHT - BALL_THICKNESS):
