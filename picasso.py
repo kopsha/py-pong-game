@@ -16,6 +16,7 @@ class PicassoEngine(metaclass=abc.ABCMeta):
             raise RuntimeError("Video screen is already initialized.")
 
         pygame.init()
+        pygame.font.init()
         self.screen = pygame.display.set_mode(
             self.window_size, pygame.DOUBLEBUF | pygame.HWSURFACE | pygame.RESIZABLE
         )

@@ -45,6 +45,9 @@ class PyPongGame(PicassoEngine):
         self.left_player = Point(LEFT_LANE, 100)
         self.right_player = Point(RIGHT_LANE, 100)
 
+        self.left_score = 0
+        self.right_score = 0
+        self.font = None
         self.restart_game()
 
     def restart_game(self):
@@ -56,7 +59,7 @@ class PyPongGame(PicassoEngine):
         )
 
     def post_init(self):
-        pass
+        self.font = pygame.font.Font("PressStart2P-Regular.ttf", 36)
 
     def on_paint(self):
         self.update_player_moves()
@@ -66,6 +69,7 @@ class PyPongGame(PicassoEngine):
         self.draw_stick(self.left_player)
         self.draw_stick(self.right_player)
         self.draw_ball()
+        self.draw_score()
 
         self.frame_counter += 1
         if self.frame_counter % 1000 == 0:
@@ -89,6 +93,28 @@ class PyPongGame(PicassoEngine):
         self.right_up = pressed[pygame.K_UP]
         self.right_down = pressed[pygame.K_DOWN]
 
+    def update_score(self, player):
+        if player == "left":
+            self.left_score += 1
+        elif player == "right":
+            self.right_score += 1
+
+        win_score = 11
+        if self.left_score >= win_score:
+            print("Left player wins!")
+            self.left_score = 0
+            self.right_score = 0
+        elif self.right_score >= win_score:
+            print("Right player wins!")
+            self.left_score = 0
+            self.right_score = 0
+
+    def draw_score(self):
+        score_text = f"{self.left_score} - {self.right_score}"
+        text = self.font.render(score_text, 1, WHITE)
+        textpos = text.get_rect(centerx=self.screen.get_width() / 2, y=20)
+        self.screen.blit(text, textpos)
+
     def update_player_moves(self):
         if self.left_up and self.left_player.y > 0:
             new_y = self.left_player.y - STICK_VELOCITY
@@ -110,8 +136,13 @@ class PyPongGame(PicassoEngine):
             self.ball.y + self.velocity.y,
         )
 
-        if new_pos.x > (WIDTH - BALL_THICKNESS) or new_pos.x < (0 + BALL_THICKNESS):
+        if new_pos.x > (WIDTH - BALL_THICKNESS):
             self.restart_game()
+            self.update_score("left")
+            return
+        elif new_pos.x < (0 + BALL_THICKNESS):
+            self.restart_game()
+            self.update_score("right")
             return
 
         # wall reflections
@@ -124,19 +155,25 @@ class PyPongGame(PicassoEngine):
             new_pos.y -= over_y
             self.velocity.y = -self.velocity.y
         elif (
-            ((self.right_player.y - BALL_THICKNESS) <= new_pos.y <= (self.right_player.y + STICK_HEIGHT + BALL_THICKNESS))
-            and
-            ((self.right_player.x - BALL_THICKNESS) <= new_pos.x <= self.right_player.x)
+            (self.right_player.y - BALL_THICKNESS)
+            <= new_pos.y
+            <= (self.right_player.y + STICK_HEIGHT + BALL_THICKNESS)
+        ) and (
+            (self.right_player.x - BALL_THICKNESS) <= new_pos.x <= self.right_player.x
         ):  # right player reflections
             over_x = new_pos.x - (self.right_player.x - BALL_THICKNESS)
             new_pos.x -= over_x
             self.velocity.x = -self.velocity.x
         elif (
-            ((self.left_player.y - BALL_THICKNESS) <= new_pos.y <= (self.left_player.y + STICK_HEIGHT + BALL_THICKNESS))
-            and
-            ((self.left_player.x +  STICK_WIDTH) <= new_pos.x <= ((self.left_player.x +  STICK_WIDTH) + BALL_THICKNESS))
+            (self.left_player.y - BALL_THICKNESS)
+            <= new_pos.y
+            <= (self.left_player.y + STICK_HEIGHT + BALL_THICKNESS)
+        ) and (
+            (self.left_player.x + STICK_WIDTH)
+            <= new_pos.x
+            <= ((self.left_player.x + STICK_WIDTH) + BALL_THICKNESS)
         ):  # left player reflections
-            over_x = new_pos.x - ((self.left_player.x +  STICK_WIDTH) + BALL_THICKNESS)
+            over_x = new_pos.x - ((self.left_player.x + STICK_WIDTH) + BALL_THICKNESS)
             new_pos.x -= over_x
             self.velocity.x = -self.velocity.x
 
